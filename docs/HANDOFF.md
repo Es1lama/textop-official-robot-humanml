@@ -159,6 +159,8 @@ Files:
 2. `scripts/run_official_textop_mvae.sh`
 3. `scripts/run_official_textop_mvae_resume.sh`
 4. `scripts/run_official_textop_dar.sh`
+5. `scripts/run_official_textop_vis_mvae.sh`
+6. `scripts/run_official_textop_vis_dar.sh`
 
 ### 6.1 `check_dataset_layout.sh`
 
@@ -186,6 +188,22 @@ It accepts:
 1. a trained MVAE checkpoint
 2. optionally an existing DAR checkpoint if you want to continue DAR
 
+### 6.5 `run_official_textop_vis_mvae.sh`
+
+This launches the official MVAE reconstruction viewer.
+It is the quickest way to show:
+
+1. ground-truth future motion
+2. MVAE reconstructed future motion
+
+No extra reconstruction code was written for the handoff.
+This is just a thin wrapper over the official `vis_mvae` entrypoint.
+
+### 6.6 `run_official_textop_vis_dar.sh`
+
+This launches the official DAR visualization path.
+Use it after DAR training if the next person wants to compare generated motion against the ground truth in the viewer.
+
 ## 7. Current Verified Experiment Result
 
 We already verified on full data that this baseline is trainable.
@@ -209,6 +227,27 @@ This corresponds to:
 
 That is enough to show the current baseline is not only launchable, but truly trainable.
 
+We later resumed from `ckpt_1000.pth` and stopped the run at step `13896` to free GPU for DAR.
+The saved checkpoint history includes:
+
+1. `ckpt_5000.pth`
+2. `ckpt_10000.pth`
+
+Recent loss values during that resumed phase:
+
+1. step 5000: `0.011362`
+2. step 10000: `0.009063`
+3. step 13896: `0.006279`
+4. last-20 mean: `0.006592`
+5. last-20 min/max: `0.005702 ~ 0.008025`
+
+Interpretation in plain language:
+
+1. the loss is still moving, so this is not a strict final convergence claim
+2. but the curve is already much flatter than the early stage
+3. for the purpose of switching over to DAR, this is already a reasonable stopping point
+4. because the stop happened before the next save point at step `15000`, the practical checkpoint to hand to DAR right now is `ckpt_10000.pth`
+
 ## 8. Runtime Estimate
 
 Measured on one RTX 4090, official `batch_size=512`:
@@ -230,6 +269,7 @@ Put here:
 3. handoff docs
 4. launch scripts
 5. result summary
+6. reconstruction / visualization launch scripts
 
 ### Hugging Face
 

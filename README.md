@@ -58,7 +58,9 @@ textop-official-robot-humanml/
     ├── check_dataset_layout.sh
     ├── run_official_textop_mvae.sh
     ├── run_official_textop_mvae_resume.sh
-    └── run_official_textop_dar.sh
+    ├── run_official_textop_dar.sh
+    ├── run_official_textop_vis_mvae.sh
+    └── run_official_textop_vis_dar.sh
 ```
 
 ## Required Raw Data
@@ -122,6 +124,18 @@ bash scripts/run_official_textop_mvae_resume.sh 0 /path/to/ckpt_1000.pth
 bash scripts/run_official_textop_dar.sh 0 /path/to/mvae_ckpt.pth
 ```
 
+### 6. Visualize MVAE reconstruction
+
+```bash
+bash scripts/run_official_textop_vis_mvae.sh 0 /path/to/mvae_ckpt.pth
+```
+
+### 7. Visualize DAR generation
+
+```bash
+bash scripts/run_official_textop_vis_dar.sh 0 /path/to/dar_ckpt.pth /path/to/mvae_ckpt.pth
+```
+
 ## What Was Changed
 
 See [docs/HANDOFF.md](docs/HANDOFF.md).
@@ -147,6 +161,18 @@ Observed `loss/train_total`:
 
 This is a `94.26%` drop from step 1 to step 1390.
 
+We later resumed MVAE and let it run to step `13896` before stopping it to free GPU for DAR.
+The tail loss is already much flatter there:
+
+1. step 5000: `0.011362`
+2. step 10000: `0.009063`
+3. step 13896: `0.006279`
+4. last-20 mean: `0.006592`
+5. last-20 min/max: `0.005702 ~ 0.008025`
+
+This is good enough to show the run has entered a late, flatter regime, even if it is not mathematically "fully converged".
+Since the run was stopped before the next save point at step `15000`, the recommended MVAE checkpoint to pass into DAR right now is the saved `ckpt_10000.pth`.
+
 ## Estimated Training Time
 
 Measured on a single RTX 4090 with official `batch_size=512`:
@@ -158,6 +184,18 @@ Measured on a single RTX 4090 with official `batch_size=512`:
 5. DAR is heavier and should be budgeted at about `2.5 ~ 4 days` on one RTX 4090
 
 These are engineering estimates for this dataset and this hardware, not the original paper runtime.
+
+## Reconstruction And Visualization
+
+We did **not** add new reconstruction model code.
+The official repo already contains this:
+
+1. `robotmdar/eval/vis_mvae.py`
+   It reconstructs ground-truth future motion and MVAE-decoded future motion side by side.
+2. `robotmdar/eval/vis_dar.py`
+   It visualizes DAR-generated motion against the ground truth.
+
+The two shell scripts above are only thin wrappers so the next person can launch them without digging through Hydra config details.
 
 ## Checkpoints
 
