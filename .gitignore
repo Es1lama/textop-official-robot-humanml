@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.venv/
+
+# Training outputs
+TextOpRobotMDAR/logs/
+logs/
+*.pth
+*.pt
+
+# Raw data and generated cache
+dataset/robot_humanml_data_v2/
+dataset/HumanML3D_babel_compat/meanstd.pkl
+dataset/HumanML3D_babel_compat/train_text_embed.pkl
+dataset/HumanML3D_babel_compat/val_text_embed.pkl
+
+# Editors
+.DS_Store
+.idea/
+.vscode/
