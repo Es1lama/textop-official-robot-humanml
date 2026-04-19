@@ -3,6 +3,10 @@
 This document is meant for the next person who will run or continue this baseline.
 It focuses on concrete code locations and concrete logic, not abstract terminology.
 
+For the latest experiment numbers, also read:
+
+`docs/CURRENT_RESULTS.md`
+
 ## 1. What This Repo Is
 
 This repo is the official TextOp baseline adapted to our current dataset layout.
@@ -248,6 +252,21 @@ Interpretation in plain language:
 3. for the purpose of switching over to DAR, this is already a reasonable stopping point
 4. because the stop happened before the next save point at step `15000`, the practical checkpoint to hand to DAR right now is `ckpt_10000.pth`
 
+We then ran DAR from that MVAE checkpoint and trained it successfully to `step 50000`.
+
+Important DAR numbers:
+
+1. `loss/train_total`: `0.498519 -> 0.100912`
+2. `loss/train_rec`: `0.109399 -> 0.021164`
+3. `loss/train_latent_rec`: `0.389046 -> 0.079731`
+4. recent `loss/train_total` mean over last 20 points: `0.105537`
+
+Plain-language interpretation:
+
+1. DAR is clearly learning
+2. this is already a valid checkpoint to hand off
+3. but it is still a mid-stage checkpoint, not the end of the full official schedule
+
 ## 8. Runtime Estimate
 
 Measured on one RTX 4090, official `batch_size=512`:
@@ -270,6 +289,7 @@ Put here:
 4. launch scripts
 5. result summary
 6. reconstruction / visualization launch scripts
+7. a short current-results note such as `docs/CURRENT_RESULTS.md`
 
 ### Hugging Face
 

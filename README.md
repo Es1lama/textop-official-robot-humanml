@@ -146,6 +146,7 @@ That file explains:
 2. what each change does
 3. how the data mapping works
 4. what experiment result we already verified
+5. what the current recommended checkpoints are
 
 ## Current Verified Result
 
@@ -173,6 +174,31 @@ The tail loss is already much flatter there:
 This is good enough to show the run has entered a late, flatter regime, even if it is not mathematically "fully converged".
 Since the run was stopped before the next save point at step `15000`, the recommended MVAE checkpoint to pass into DAR right now is the saved `ckpt_10000.pth`.
 
+We also ran DAR successfully to `step 50000`.
+That checkpoint is not the final end of the full official DAR schedule, but it is already a valid mid-stage result that can be handed off for continuation or qualitative checking.
+
+Observed DAR losses:
+
+1. `loss/train_total`: `0.498519 -> 0.100912`
+2. `loss/train_rec`: `0.109399 -> 0.021164`
+3. `loss/train_latent_rec`: `0.389046 -> 0.079731`
+4. recent `loss/train_total` mean over last 20 logged points: `0.105537`
+5. recent `loss/train_total` mean over last 100 logged points: `0.107501`
+
+That means DAR is training in the expected direction and is already far below its early-stage values.
+
+## Recommended Handoff Checkpoints
+
+If you want to hand the current work to a teammate right now, use:
+
+1. MVAE: `ckpt_10000.pth`
+2. DAR: `ckpt_50000.pth`
+
+Reason:
+
+1. MVAE `ckpt_10000.pth` comes from the flatter late stage before we stopped MVAE to free GPU for DAR.
+2. DAR `ckpt_50000.pth` is the latest saved checkpoint from the current DAR run and already reflects a strong early-to-mid training drop.
+
 ## Estimated Training Time
 
 Measured on a single RTX 4090 with official `batch_size=512`:
@@ -196,6 +222,23 @@ The official repo already contains this:
    It visualizes DAR-generated motion against the ground truth.
 
 The two shell scripts above are only thin wrappers so the next person can launch them without digging through Hydra config details.
+
+In plain language, "reconstruction" means:
+
+1. take a real motion clip from the dataset
+2. compress it into MVAE latent
+3. decode it back into motion
+4. compare the decoded motion with the original motion
+
+So reconstruction is checking whether MVAE has learned a good motion representation.
+It is **not** the same thing as DAR text-driven generation.
+
+We also exported one reconstruction sample locally and measured:
+
+1. feature-space mean MSE: `0.004995`
+2. feature-space mean MAE: `0.039733`
+3. qpos-space MSE: `3.14e-05`
+4. qpos-space MAE: `0.00351`
 
 ## Checkpoints
 
