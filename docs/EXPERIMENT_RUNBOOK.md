@@ -160,6 +160,27 @@ bash scripts/run_sim2sim_npz_smoke.sh \
   exports/dar_npz/dar_0000_sim2sim.mp4
 ```
 
+Render a whole exported batch as official/reference MP4s:
+
+```bash
+MUJOCO_GL=egl /data/haozhe/zzn/VAR_FM/ws/project/P_1_Embodied-AI/sim2sim/.venv/bin/python \
+  scripts/render_npz_reference_mp4.py \
+  exports/dar_npz/sim2sim \
+  --out-dir exports/dar_npz/official_mp4 \
+  --width 640 \
+  --height 360 \
+  --loops 3
+```
+
+Run a whole exported batch through sim2sim:
+
+```bash
+SIM_TIMEOUT=18s DEPLOY_TIMEOUT=12s bash scripts/run_sim2sim_npz_batch.sh \
+  exports/dar_npz/sim2sim \
+  exports/dar_npz/sim2sim_mp4 \
+  4
+```
+
 Tracker pass criteria:
 
 1. The tracker loads the generated target without shape/key errors.

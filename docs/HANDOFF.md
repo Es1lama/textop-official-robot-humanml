@@ -167,6 +167,9 @@ Files:
 6. `scripts/run_official_textop_vis_dar.sh`
 7. `scripts/export_existing_dar_npz.sh`
 8. `scripts/run_sim2sim_npz_smoke.sh`
+9. `scripts/render_npz_reference_mp4.py`
+10. `scripts/run_sim2sim_npz_batch.sh`
+11. `scripts/overlay_mp4_text.py`
 
 ### 6.1 `check_dataset_layout.sh`
 
@@ -260,6 +263,53 @@ It uses the existing sim2sim checkout by default:
 ```
 
 Override with `SIM2SIM_ROOT=/path/to/sim2sim` if needed.
+
+### 6.9 `render_npz_reference_mp4.py`
+
+This renders exported `.npz` target motions directly to MP4.
+
+This is the fast official/reference visualization path:
+
+1. it does not run a controller
+2. it does not test whether the tracker can follow the motion
+3. it shows what DAR generated as the target motion
+
+Example:
+
+```bash
+MUJOCO_GL=egl /data/haozhe/zzn/VAR_FM/ws/project/P_1_Embodied-AI/sim2sim/.venv/bin/python \
+  scripts/render_npz_reference_mp4.py \
+  exports/batch_dar50000_mp4/sim2sim \
+  --out-dir exports/batch_dar50000_mp4/official_mp4 \
+  --width 640 \
+  --height 360 \
+  --loops 3
+```
+
+### 6.10 `run_sim2sim_npz_batch.sh`
+
+This runs a directory of exported `.npz` files through sim2sim one by one.
+
+Example:
+
+```bash
+SIM_TIMEOUT=18s DEPLOY_TIMEOUT=12s bash scripts/run_sim2sim_npz_batch.sh \
+  exports/batch_dar50000_mp4/sim2sim \
+  exports/batch_dar50000_mp4/sim2sim_mp4 \
+  4
+```
+
+It writes:
+
+1. raw sim2sim videos under `raw/`
+2. text-annotated videos under `annotated/`
+3. sim2sim and deploy logs under `logs/`
+
+### 6.11 `overlay_mp4_text.py`
+
+This reads `primary_text` or `texts` from the motion `.npz` and burns it into an MP4.
+
+It is used by `run_sim2sim_npz_batch.sh`.
 
 ## 7. Current Verified Experiment Result
 

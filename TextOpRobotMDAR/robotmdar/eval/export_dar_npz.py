@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import Dict, List
 
@@ -90,7 +91,37 @@ def _quat_rotate_inverse_xyzw(quat: np.ndarray, vectors: np.ndarray) -> np.ndarr
     return (vectors + qw * t + np.cross(qvec, t)).astype(np.float32)
 
 
-def _save_sim2sim_npz(path: Path, dataset: Dataset, motion_t: MotionDict, sample_idx: int, fps: float) -> None:
+def _primary_text(texts: List[str]) -> str:
+    unique = []
+    for text in texts:
+        text = str(text).strip()
+        if text and text not in unique:
+            unique.append(text)
+    return " | ".join(unique[:3]) if unique else ""
+
+
+def _build_text_embedding_table(dataset: Dataset):
+    items = sorted(dataset.text_embeddings_dict.items(), key=lambda item: item[0])
+    texts = [item[0] for item in items]
+    embeddings = torch.stack([item[1].detach().float().cpu() for item in items], dim=0)
+    return texts, embeddings
+
+
+def _match_text_batch(cond: torch.Tensor, texts: List[str], embeddings: torch.Tensor) -> List[str]:
+    cond_cpu = cond.detach().float().cpu()
+    distances = torch.cdist(cond_cpu, embeddings)
+    idx = torch.argmin(distances, dim=1).tolist()
+    return [texts[i] for i in idx]
+
+
+def _save_sim2sim_npz(
+    path: Path,
+    dataset: Dataset,
+    motion_t: MotionDict,
+    sample_idx: int,
+    fps: float,
+    texts: List[str],
+) -> None:
     motion_np = _sample_motion_dict(motion_t, sample_idx)
     root_pos = motion_np["root_trans_offset"].astype(np.float32)
     root_rot_xyzw = motion_np["root_rot"].astype(np.float32)
@@ -116,10 +147,19 @@ def _save_sim2sim_npz(path: Path, dataset: Dataset, motion_t: MotionDict, sample
         joint_names=ISAAC_29_JOINT_NAMES,
         body_names=body_names,
         local_body_pos=local_body_pos,
+        texts=np.asarray(texts, dtype=str),
+        primary_text=np.asarray(_primary_text(texts), dtype=str),
     )
 
 
-def _save_tracker_npz(path: Path, dataset: Dataset, motion_t: MotionDict, sample_idx: int, fps: float) -> None:
+def _save_tracker_npz(
+    path: Path,
+    dataset: Dataset,
+    motion_t: MotionDict,
+    sample_idx: int,
+    fps: float,
+    texts: List[str],
+) -> None:
     """Save a best-effort TextOpTracker-style file derived from FK."""
     fk = dataset.skeleton.forward_kinematics(
         {key: value[sample_idx:sample_idx + 1] for key, value in motion_t.items()},
@@ -145,6 +185,8 @@ def _save_tracker_npz(path: Path, dataset: Dataset, motion_t: MotionDict, sample
         body_quat_w=body_quat_wxyz,
         body_lin_vel_w=body_lin_vel,
         body_ang_vel_w=body_ang_vel,
+        texts=np.asarray(texts, dtype=str),
+        primary_text=np.asarray(_primary_text(texts), dtype=str),
     )
 
 
@@ -166,6 +208,7 @@ def main(cfg: DictConfig):
 
     val_data: Dataset = instantiate(cfg.data.val)
     val_dataiter = iter(val_data)
+    text_vocab, text_embeddings = _build_text_embedding_table(val_data)
 
     vae: VAE = instantiate(cfg.vae)
     denoiser: Denoiser = instantiate(cfg.denoiser)
@@ -186,16 +229,23 @@ def main(cfg: DictConfig):
 
     saved = 0
     batch_id = 0
+    manifest = []
     while saved < max_motions:
         batch = next(val_dataiter)
+        batch_size_cfg = int(cfg.data.batch_size)
         pd_abs_pose = get_zero_abs_pose((cfg.data.batch_size,), device=cfg.device)
         gt_abs_pose = get_zero_abs_pose((cfg.data.batch_size,), device=cfg.device)
         pred_parts: List[MotionDict] = []
         gt_parts: List[MotionDict] = []
+        batch_texts: List[List[str]] = [[] for _ in range(batch_size_cfg)]
         prev_predicted_motion = None
 
         for pidx in range(num_primitive):
             motion, cond = batch[pidx]
+            matched_texts = _match_text_batch(cond, text_vocab, text_embeddings)
+            for sample_idx, text in enumerate(matched_texts):
+                if sample_idx < len(batch_texts):
+                    batch_texts[sample_idx].append(text)
             motion, cond = motion.to(cfg.device), cond.to(cfg.device)
             future_motion_gt = motion[:, -future_len:, :]
             history_motion_gt = motion[:, :history_len, :]
@@ -237,16 +287,33 @@ def main(cfg: DictConfig):
             if saved >= max_motions:
                 break
             name = f"{prefix}_{saved:04d}"
-            _save_sim2sim_npz(out_dir / "sim2sim" / f"{name}.npz", val_data, pred_motion, sample_idx, fps)
-            _save_tracker_npz(out_dir / "tracker" / name / "motion.npz", val_data, pred_motion, sample_idx, fps)
+            texts = batch_texts[sample_idx]
+            sim_path = out_dir / "sim2sim" / f"{name}.npz"
+            tracker_path = out_dir / "tracker" / name / "motion.npz"
+            _save_sim2sim_npz(sim_path, val_data, pred_motion, sample_idx, fps, texts)
+            _save_tracker_npz(tracker_path, val_data, pred_motion, sample_idx, fps, texts)
 
             if save_gt:
                 gt_name = f"{name}_gt"
-                _save_sim2sim_npz(out_dir / "sim2sim_gt" / f"{gt_name}.npz", val_data, gt_motion, sample_idx, fps)
-                _save_tracker_npz(out_dir / "tracker_gt" / gt_name / "motion.npz", val_data, gt_motion, sample_idx, fps)
+                _save_sim2sim_npz(out_dir / "sim2sim_gt" / f"{gt_name}.npz", val_data, gt_motion, sample_idx, fps, texts)
+                _save_tracker_npz(out_dir / "tracker_gt" / gt_name / "motion.npz", val_data, gt_motion, sample_idx, fps, texts)
 
-            print(f"[export_dar_npz] saved {name}")
+            manifest.append({
+                "name": name,
+                "primary_text": _primary_text(texts),
+                "texts": texts,
+                "sim2sim_npz": str(sim_path),
+                "tracker_npz": str(tracker_path),
+                "fps": fps,
+                "frames": int(pred_motion["dof"].shape[1]),
+            })
+
+            print(f"[export_dar_npz] saved {name}: {_primary_text(texts)}")
             saved += 1
         batch_id += 1
 
+    manifest_path = out_dir / "manifest.jsonl"
+    with manifest_path.open("w", encoding="utf-8") as f:
+        for row in manifest:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
     print(f"[export_dar_npz] complete: saved {saved} motions under {out_dir}")

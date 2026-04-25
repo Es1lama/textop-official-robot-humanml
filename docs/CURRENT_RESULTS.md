@@ -126,3 +126,44 @@ Important limitation:
 2. this does not prove the generated motion is already paper-quality
 3. with the current mid-stage `ckpt_50000.pth`, the robot can fall after several seconds in sim2sim
 4. use this as a smoke test, not as a final tracker-quality result
+
+## 7. Batch MP4 Export
+
+A 4-sample batch was exported on 2026-04-25.
+
+Output directory:
+
+```text
+exports/batch_dar50000_mp4
+```
+
+Files:
+
+1. manifest: `exports/batch_dar50000_mp4/manifest.jsonl`
+2. official/reference MP4s: `exports/batch_dar50000_mp4/official_mp4/*.mp4`
+3. sim2sim tracker MP4s: `exports/batch_dar50000_mp4/sim2sim_mp4/annotated/*.mp4`
+4. sim2sim logs: `exports/batch_dar50000_mp4/sim2sim_mp4/logs/*.log`
+
+The official/reference MP4s are direct kinematic playback of TextOp/DAR generated target motions.
+The sim2sim MP4s are closed-loop tracker runs where the controller tries to follow the exported target.
+
+Batch text prompts:
+
+1. `dar_0000`: `a person walks in a curved angle then stops. | a person walks in a curved line. | a man walks and turns to the right.`
+2. `dar_0001`: `a person walks forward, swaying their hips. | a person spins to their right, appears to look around, walks quickly up a hill, then turns back around to their left. | the person is doing a casual quick walk.`
+3. `dar_0002`: `he stomps his right feet | a person stomps with their right leg. | a person stomps their right foot`
+4. `dar_0003`: `a person  slowly walked forward | a person walks forward at medium speed. | walking forward and then stopping.`
+
+Validation:
+
+1. all 4 official/reference MP4s were generated
+2. all 4 sim2sim MP4s were generated
+3. all 4 sim2sim deploy logs entered `Running high level...`
+4. all 4 sim2sim deploy logs reported `Action mapping: 29/29 mapped`
+5. all 4 sim2sim control loops ran near `50 Hz`
+
+Limitation:
+
+1. current mid-stage DAR motions still cause the simulated robot to fall after roughly `8s`
+2. therefore this batch proves export/render/tracker connectivity, not final motion quality
+3. IsaacLab TextOpTracker was not run because the available conda environments do not currently import `isaaclab`
