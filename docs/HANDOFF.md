@@ -170,6 +170,8 @@ Files:
 9. `scripts/render_npz_reference_mp4.py`
 10. `scripts/run_sim2sim_npz_batch.sh`
 11. `scripts/overlay_mp4_text.py`
+12. `scripts/export_existing_mvae_recon_npz.sh`
+13. `scripts/render_mvae_recon_batch.sh`
 
 ### 6.1 `check_dataset_layout.sh`
 
@@ -205,8 +207,8 @@ It is the quickest way to show:
 1. ground-truth future motion
 2. MVAE reconstructed future motion
 
-No extra reconstruction code was written for the handoff.
 This is just a thin wrapper over the official `vis_mvae` entrypoint.
+For batch MP4 export, use `export_existing_mvae_recon_npz.sh` and `render_mvae_recon_batch.sh` below.
 
 ### 6.6 `run_official_textop_vis_dar.sh`
 
@@ -310,6 +312,50 @@ It writes:
 This reads `primary_text` or `texts` from the motion `.npz` and burns it into an MP4.
 
 It is used by `run_sim2sim_npz_batch.sh`.
+
+### 6.12 `export_existing_mvae_recon_npz.sh`
+
+This exports MVAE reconstruction samples from an existing MVAE checkpoint.
+
+It writes:
+
+1. `gt/*.npz`
+2. `recon/*.npz`
+3. `manifest.jsonl`
+
+Meaning:
+
+1. `gt` is the original validation motion
+2. `recon` is the MVAE encode/decode result
+3. this is an MVAE reconstruction check, not text-conditioned generation
+
+Example:
+
+```bash
+MAX_MOTIONS=4 BATCH_SIZE=4 PYTHON_BIN=/data/haozhe/miniconda3/envs/motiongpt/bin/python \
+  bash scripts/export_existing_mvae_recon_npz.sh \
+  4 \
+  /path/to/mvae/ckpt_10000.pth \
+  exports/batch_mvae_recon_10000_mp4
+```
+
+### 6.13 `render_mvae_recon_batch.sh`
+
+This renders both sides of an MVAE reconstruction batch:
+
+1. `gt/*.npz` to `mp4_gt/*.mp4`
+2. `recon/*.npz` to `mp4_recon/*.mp4`
+
+Example:
+
+```bash
+LOOPS=3 bash scripts/render_mvae_recon_batch.sh exports/batch_mvae_recon_10000_mp4
+```
+
+The output is meant for side-by-side human inspection:
+
+1. if `recon` visually follows `gt`, MVAE reconstruction is working
+2. if `recon` freezes, jitters badly, or loses the main action, MVAE is not good enough for DAR
 
 ## 7. Current Verified Experiment Result
 

@@ -128,10 +128,14 @@ Before running tracker:
 
 1. Run MVAE reconstruction visualization:
    `bash scripts/run_official_textop_vis_mvae.sh <GPU> /path/to/mvae_ckpt.pth`
-2. Run DAR generation visualization:
+2. Or export a batch of MVAE reconstruction MP4s:
+   `MAX_MOTIONS=4 BATCH_SIZE=4 bash scripts/export_existing_mvae_recon_npz.sh <GPU> /path/to/mvae_ckpt.pth exports/batch_mvae_recon`
+3. Render that MVAE reconstruction batch:
+   `LOOPS=3 bash scripts/render_mvae_recon_batch.sh exports/batch_mvae_recon`
+4. Run DAR generation visualization:
    `bash scripts/run_official_textop_vis_dar.sh <GPU> /path/to/dar_ckpt.pth /path/to/mvae_ckpt.pth`
-3. Check that generated motion is not static, exploding, or obviously broken.
-4. Check a few prompt types:
+5. Check that generated motion is not static, exploding, or obviously broken.
+6. Check a few prompt types:
    `stand`, `walk`, `turn`, `raise/wave arm`.
 
 Visualization pass criteria:

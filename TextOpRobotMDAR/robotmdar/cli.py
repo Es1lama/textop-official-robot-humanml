@@ -34,6 +34,7 @@ def main(cfg: DictConfig):
         "train-dar": "train.train_dar",
         "train-mvae": "train.train_mvae",
         "vis-mvae": "eval.vis_mvae",
+        "export-mvae-recon-npz": "eval.export_mvae_recon_npz",
         "vis-dar": "eval.vis_dar",
         "loop-dar": "eval.loop_dar",
         "freq-dar": "eval.freq_dar",

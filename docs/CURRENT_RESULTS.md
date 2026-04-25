@@ -81,7 +81,50 @@ Measured values:
 
 These numbers are enough to say the MVAE reconstruction is already reasonable.
 
-## 6. DAR Export And sim2sim Smoke Check
+## 6. MVAE Reconstruction MP4 Batch
+
+A 4-sample MVAE reconstruction batch was exported on 2026-04-25.
+
+Output directory:
+
+```text
+exports/batch_mvae_recon_10000_mp4
+```
+
+Files:
+
+1. manifest: `exports/batch_mvae_recon_10000_mp4/manifest.jsonl`
+2. ground-truth MP4s: `exports/batch_mvae_recon_10000_mp4/mp4_gt/*.mp4`
+3. VAE reconstruction MP4s: `exports/batch_mvae_recon_10000_mp4/mp4_recon/*.mp4`
+4. batch summary: `exports/batch_mvae_recon_10000_mp4/BATCH_SUMMARY.md`
+
+Checkpoint:
+
+```text
+/data/haozhe/zzn/VAR_FM/ws/project/P_1_Embodied-AI/_reference/TextOp_official/TextOpRobotMDAR/logs/RobotMDAR/OfficialFullTrainabilityResume/train-mvae-20260418_160348/ckpt_10000.pth
+```
+
+What it means:
+
+1. `mp4_gt` shows the original validation-set motion
+2. `mp4_recon` shows the motion after MVAE encode/decode
+3. this checks MVAE reconstruction quality
+4. this is not text generation, not DAR generation, and not sim2sim tracking
+
+Validation:
+
+1. 4 ground-truth MP4s were generated
+2. 4 VAE reconstruction MP4s were generated
+3. each MP4 is `6.6s`, `30 FPS`, `198` frames
+
+Batch text prompts:
+
+1. `mvae_0000`: `a person walks in a curved angle then stops. | a person walks in a curved line. | a man walks and turns to the right.`
+2. `mvae_0001`: `a person walks forward, swaying their hips. | a person spins to their right, appears to look around, walks quickly up a hill, then turns back around to their left. | the person is doing a casual quick walk.`
+3. `mvae_0002`: `he stomps his right feet | a person stomps with their right leg. | a person stomps their right foot`
+4. `mvae_0003`: `a person  slowly walked forward | a person walks forward at medium speed. | walking forward and then stopping.`
+
+## 7. DAR Export And sim2sim Smoke Check
 
 DAR checkpoint `ckpt_50000.pth` was exported to tracker-readable motion files on
 2026-04-25.
@@ -127,7 +170,7 @@ Important limitation:
 3. with the current mid-stage `ckpt_50000.pth`, the robot can fall after several seconds in sim2sim
 4. use this as a smoke test, not as a final tracker-quality result
 
-## 7. Batch MP4 Export
+## 8. Batch MP4 Export
 
 A 4-sample batch was exported on 2026-04-25.
 
