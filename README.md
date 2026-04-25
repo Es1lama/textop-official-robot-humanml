@@ -56,9 +56,11 @@ textop-official-robot-humanml/
 │   └── HANDOFF.md
 └── scripts/
     ├── check_dataset_layout.sh
+    ├── monitor_textop_run.sh
     ├── run_official_textop_mvae.sh
     ├── run_official_textop_mvae_resume.sh
     ├── run_official_textop_dar.sh
+    ├── start_textop_monitor_tmux.sh
     ├── run_official_textop_vis_mvae.sh
     └── run_official_textop_vis_dar.sh
 ```
@@ -136,9 +138,24 @@ bash scripts/run_official_textop_vis_mvae.sh 0 /path/to/mvae_ckpt.pth
 bash scripts/run_official_textop_vis_dar.sh 0 /path/to/dar_ckpt.pth /path/to/mvae_ckpt.pth
 ```
 
+### 8. Monitor a running experiment
+
+Run once:
+
+```bash
+bash scripts/monitor_textop_run.sh /path/to/logs/RobotMDAR/<exp>/<run-dir>
+```
+
+Run every 5 minutes in tmux:
+
+```bash
+bash scripts/start_textop_monitor_tmux.sh /path/to/logs/RobotMDAR/<exp>/<run-dir>
+```
+
 ## What Was Changed
 
 See [docs/HANDOFF.md](docs/HANDOFF.md).
+See [docs/EXPERIMENT_RUNBOOK.md](docs/EXPERIMENT_RUNBOOK.md) for the current run plan, convergence rules, stage-switch rules, visualization checks, tracker checks, and monitoring workflow.
 
 That file explains:
 
