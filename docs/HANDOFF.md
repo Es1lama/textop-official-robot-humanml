@@ -165,6 +165,8 @@ Files:
 4. `scripts/run_official_textop_dar.sh`
 5. `scripts/run_official_textop_vis_mvae.sh`
 6. `scripts/run_official_textop_vis_dar.sh`
+7. `scripts/export_existing_dar_npz.sh`
+8. `scripts/run_sim2sim_npz_smoke.sh`
 
 ### 6.1 `check_dataset_layout.sh`
 
@@ -207,6 +209,57 @@ This is just a thin wrapper over the official `vis_mvae` entrypoint.
 
 This launches the official DAR visualization path.
 Use it after DAR training if the next person wants to compare generated motion against the ground truth in the viewer.
+
+### 6.7 `export_existing_dar_npz.sh`
+
+This exports an existing DAR checkpoint into plain `.npz` motion files.
+
+It writes:
+
+1. `sim2sim/*.npz`
+2. `sim2sim_gt/*.npz`
+3. `tracker/*/motion.npz`
+4. `tracker_gt/*/motion.npz`
+
+The sim2sim `.npz` contains:
+
+1. `fps`
+2. `root_pos`
+3. `root_rot`
+4. `dof_pos`
+5. `joint_names`
+6. `body_names`
+7. `local_body_pos`
+
+The first four fields are for tracking.
+`body_names` and `local_body_pos` are for drawing the reference ghost in sim2sim.
+
+Batch export:
+
+```bash
+MAX_MOTIONS=32 BATCH_SIZE=8 bash scripts/export_existing_dar_npz.sh <GPU> <DAR_CKPT> <OUT_DIR>
+```
+
+### 6.8 `run_sim2sim_npz_smoke.sh`
+
+This launches the local sim2sim tracker against one exported `.npz` and records an MP4.
+
+Example:
+
+```bash
+bash scripts/run_sim2sim_npz_smoke.sh \
+  exports/smoke_dar_npz/sim2sim/dar_0000.npz \
+  dar_0000 \
+  exports/smoke_dar_npz/dar_0000_sim2sim.mp4
+```
+
+It uses the existing sim2sim checkout by default:
+
+```text
+/data/haozhe/zzn/VAR_FM/ws/project/P_1_Embodied-AI/sim2sim
+```
+
+Override with `SIM2SIM_ROOT=/path/to/sim2sim` if needed.
 
 ## 7. Current Verified Experiment Result
 

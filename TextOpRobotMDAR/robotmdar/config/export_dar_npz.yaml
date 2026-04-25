@@ -1,0 +1,13 @@
+# @package _global_
+defaults:
+  - vis_dar
+  - _self_
+
+expname: export-dar-npz
+task: export-dar-npz
+
+export:
+  out_dir: ${hydra:runtime.cwd}/exports/dar_npz
+  max_motions: 8
+  prefix: dar
+  save_gt: true

@@ -80,3 +80,49 @@ Measured values:
 5. qpos-space max absolute error: `0.02525`
 
 These numbers are enough to say the MVAE reconstruction is already reasonable.
+
+## 6. DAR Export And sim2sim Smoke Check
+
+DAR checkpoint `ckpt_50000.pth` was exported to tracker-readable motion files on
+2026-04-25.
+
+Export command:
+
+```bash
+MAX_MOTIONS=2 BATCH_SIZE=2 PYTHON_BIN=/data/haozhe/miniconda3/envs/motiongpt/bin/python \
+  bash scripts/export_existing_dar_npz.sh \
+  4 \
+  /data/haozhe/zzn/VAR_FM/ws/project/P_1_Embodied-AI/_reference/TextOp_official/TextOpRobotMDAR/logs/RobotMDAR/OfficialFullDARFromMVAE10000/train-dar-20260418_181357/ckpt_50000.pth \
+  /data/haozhe/zzn/VAR_FM/ws/project/textop-official-robot-humanml/exports/smoke_dar_npz
+```
+
+Exported files:
+
+1. sim2sim motions: `exports/smoke_dar_npz/sim2sim/dar_0000.npz`, `exports/smoke_dar_npz/sim2sim/dar_0001.npz`
+2. ground-truth comparison motions: `exports/smoke_dar_npz/sim2sim_gt/*`
+3. best-effort TextOpTracker-style files: `exports/smoke_dar_npz/tracker/*/motion.npz`
+4. videos: `exports/smoke_dar_npz/dar_0000_sim2sim.mp4`, `exports/smoke_dar_npz/dar_0001_sim2sim.mp4`
+
+Motion shape:
+
+1. `fps`: `50`
+2. generated clip length: `66` frames
+3. generated clip duration: `1.32s`
+4. `dof_pos`: `66 x 29`
+5. `root_pos`: `66 x 3`
+6. `root_rot`: `66 x 4`
+
+sim2sim tracker smoke result:
+
+1. tracker loaded the exported `.npz`
+2. joint/action mapping was `29/29`
+3. ONNX policy inference was about `0.5 ms`
+4. high-level controller loop ran around `50 Hz`
+5. MuJoCo video recording succeeded
+
+Important limitation:
+
+1. this proves the export and tracker runtime path are connected
+2. this does not prove the generated motion is already paper-quality
+3. with the current mid-stage `ckpt_50000.pth`, the robot can fall after several seconds in sim2sim
+4. use this as a smoke test, not as a final tracker-quality result

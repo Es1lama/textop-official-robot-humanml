@@ -145,6 +145,21 @@ Visualization pass criteria:
 
 Only run tracker after visualization passes.
 
+Export a DAR checkpoint to tracker-readable files:
+
+```bash
+MAX_MOTIONS=8 BATCH_SIZE=4 bash scripts/export_existing_dar_npz.sh <GPU> <DAR_CKPT> exports/dar_npz
+```
+
+Run one exported clip through local sim2sim:
+
+```bash
+bash scripts/run_sim2sim_npz_smoke.sh \
+  exports/dar_npz/sim2sim/dar_0000.npz \
+  dar_0000 \
+  exports/dar_npz/dar_0000_sim2sim.mp4
+```
+
 Tracker pass criteria:
 
 1. The tracker loads the generated target without shape/key errors.
@@ -158,6 +173,13 @@ If tracker fails:
 1. First inspect generated motion shape, joint order, and root representation.
 2. Then inspect tracker input conversion.
 3. Only tune tracker settings after the motion file is known to be valid.
+
+Current smoke status:
+
+1. exported DAR files can be loaded by sim2sim
+2. the controller enters the tracking loop
+3. the current mid-stage DAR checkpoint is not stable enough to satisfy the `20s` upright criterion
+4. use the smoke videos as evidence of connectivity, not as final tracking quality
 
 ## 9. Monitoring
 

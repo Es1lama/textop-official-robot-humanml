@@ -37,6 +37,7 @@ def main(cfg: DictConfig):
         "vis-dar": "eval.vis_dar",
         "loop-dar": "eval.loop_dar",
         "freq-dar": "eval.freq_dar",
+        "export-dar-npz": "eval.export_dar_npz",
         "export-dar": "export.export_dar_onnx",
         "noise-opt": "opt.noise_opt",
     }
