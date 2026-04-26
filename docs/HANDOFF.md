@@ -172,6 +172,8 @@ Files:
 11. `scripts/overlay_mp4_text.py`
 12. `scripts/export_existing_mvae_recon_npz.sh`
 13. `scripts/render_mvae_recon_batch.sh`
+14. `scripts/render_gmr_view_mp4.py`
+15. `scripts/render_mvae_recon_gmr_batch.sh`
 
 ### 6.1 `check_dataset_layout.sh`
 
@@ -356,6 +358,45 @@ The output is meant for side-by-side human inspection:
 
 1. if `recon` visually follows `gt`, MVAE reconstruction is working
 2. if `recon` freezes, jitters badly, or loses the main action, MVAE is not good enough for DAR
+
+### 6.14 `render_gmr_view_mp4.py`
+
+This renders `.npz` files with the same joint-order semantics used by the local `GMR_view` reference repo.
+
+Use this for paper-facing or evaluator-facing visualization.
+
+Important behavior:
+
+1. GMR/MT files use `dof_pos`, `root_pos`, `root_rot`, and `joint_names` or `body_names`
+2. GMR/MT `root_rot` is treated as `xyzw`
+3. GMR/MT `dof_pos` is treated as grouped MT order
+4. wrist joints are removed before rendering through the GMR 23DoF MuJoCo XML
+5. Isaac-style files use `joint_pos` in Isaac left/right-interleaved order
+6. video FPS defaults to the motion file's own `fps`
+
+This fixes the old quick renderer issue where a `50 FPS` motion was rendered at `30 FPS`, making clips look slower and harder to compare with tracker/evaluation output.
+
+Example:
+
+```bash
+MUJOCO_GL=egl /data/haozhe/zzn/VAR_FM/ws/project/P_1_Embodied-AI/sim2sim/.venv/bin/python \
+  scripts/render_gmr_view_mp4.py \
+  exports/batch_mvae_recon_100000_mp4/gt \
+  --out-dir exports/batch_mvae_recon_100000_mp4/mp4_gt_gmr
+```
+
+### 6.15 `render_mvae_recon_gmr_batch.sh`
+
+This renders both sides of an MVAE reconstruction batch through the GMR-compatible path:
+
+1. `gt/*.npz` to `mp4_gt_gmr/*.mp4`
+2. `recon/*.npz` to `mp4_recon_gmr/*.mp4`
+
+Example:
+
+```bash
+LOOPS=3 bash scripts/render_mvae_recon_gmr_batch.sh exports/batch_mvae_recon_100000_mp4
+```
 
 ## 7. Current Verified Experiment Result
 

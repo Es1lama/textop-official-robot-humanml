@@ -124,7 +124,37 @@ Batch text prompts:
 3. `mvae_0002`: `he stomps his right feet | a person stomps with their right leg. | a person stomps their right foot`
 4. `mvae_0003`: `a person  slowly walked forward | a person walks forward at medium speed. | walking forward and then stopping.`
 
-## 7. DAR Export And sim2sim Smoke Check
+## 7. MVAE 100k GMR-Compatible MP4 Batch
+
+The official-step MVAE checkpoint `ckpt_100000.pth` was visualized through the local `GMR_view`-compatible path on 2026-04-26.
+
+Output directory:
+
+```text
+exports/batch_mvae_recon_100000_mp4
+```
+
+Files:
+
+1. ground-truth GMR MP4s: `exports/batch_mvae_recon_100000_mp4/mp4_gt_gmr/*.mp4`
+2. reconstruction GMR MP4s: `exports/batch_mvae_recon_100000_mp4/mp4_recon_gmr/*.mp4`
+3. updated zip: `exports/batch_mvae_recon_100000_mp4.zip`
+
+Why this path should be used:
+
+1. it uses the local `GMR_view/assets/robots/g1/g1.xml`
+2. it treats GMR/MT `dof_pos` as grouped MT joint order
+3. it removes wrist joints before rendering with the 23DoF GMR XML
+4. it uses each motion file's own `fps`
+
+Validation:
+
+1. 8 GT MP4s were generated
+2. 8 reconstruction MP4s were generated
+3. each GMR MP4 is `3.96s`, `50 FPS`, `198` frames
+4. this corrects the older quick-render MP4s that forced `30 FPS` and therefore showed the same `198` frames as `6.6s`
+
+## 8. DAR Export And sim2sim Smoke Check
 
 DAR checkpoint `ckpt_50000.pth` was exported to tracker-readable motion files on
 2026-04-25.
@@ -170,7 +200,7 @@ Important limitation:
 3. with the current mid-stage `ckpt_50000.pth`, the robot can fall after several seconds in sim2sim
 4. use this as a smoke test, not as a final tracker-quality result
 
-## 8. Batch MP4 Export
+## 9. Batch MP4 Export
 
 A 4-sample batch was exported on 2026-04-25.
 
