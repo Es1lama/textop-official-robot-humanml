@@ -1,0 +1,13 @@
+# @package _global_
+defaults:
+  - export_mvae_recon_npz
+  - _self_
+
+expname: export-mvae-full-recon-npz
+task: export-mvae-full-recon-npz
+
+export:
+  out_dir: ${hydra:runtime.cwd}/exports/mvae_full_recon_npz
+  max_motions: 8
+  prefix: mvae
+  source_manifest: null
