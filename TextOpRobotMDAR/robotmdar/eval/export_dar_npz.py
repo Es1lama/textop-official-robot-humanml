@@ -15,7 +15,7 @@ from robotmdar.eval.generate_dar import ClassifierFreeWrapper, generate_next_mot
 from robotmdar.train.manager import DARManager
 
 
-ISAAC_29_JOINT_NAMES = np.asarray([
+MT_29_JOINT_NAMES = np.asarray([
     "left_hip_pitch_joint",
     "left_hip_roll_joint",
     "left_hip_yaw_joint",
@@ -49,7 +49,7 @@ ISAAC_29_JOINT_NAMES = np.asarray([
 
 
 def _dof23_to_joint29(dof: np.ndarray) -> np.ndarray:
-    """Invert the dataset adapter that removes the six wrist DoFs for TextOp."""
+    """Expand TextOp/GMR 23-DoF grouped order to MT/GMR 29-DoF order."""
     if dof.ndim != 2 or dof.shape[1] != 23:
         raise ValueError(f"Expected dof shape [T, 23], got {dof.shape}")
     joint = np.zeros((dof.shape[0], 29), dtype=np.float32)
@@ -144,7 +144,7 @@ def _save_sim2sim_npz(
         root_pos=root_pos,
         root_rot=root_rot_xyzw,
         dof_pos=dof_pos,
-        joint_names=ISAAC_29_JOINT_NAMES,
+        joint_names=MT_29_JOINT_NAMES,
         body_names=body_names,
         local_body_pos=local_body_pos,
         texts=np.asarray(texts, dtype=str),

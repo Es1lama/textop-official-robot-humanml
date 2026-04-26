@@ -8,6 +8,12 @@ Assumption:
 2. "Phase 2" means DAR training from a selected MVAE checkpoint.
 3. If "Phase 2" instead means the later "our latent, no official VAE" comparison, do not start it until this official baseline has passed MVAE reconstruction, DAR visualization, and tracker smoke checks.
 
+Important correction:
+
+1. checkpoints trained before the 2026-04-26 joint-order fix are not paper-valid
+2. they can be used to prove the pipeline runs, but not to report final motion quality
+3. paper-facing runs should start MVAE from scratch, then train DAR from that corrected MVAE checkpoint
+
 ## 1. Preflight
 
 Before starting a training run:
@@ -63,6 +69,11 @@ Current verified MVAE state:
 4. reconstruction qpos-space MAE: `0.00351`
 
 This satisfies the practical stop criteria for moving to DAR.
+
+Correction:
+
+These numbers came from the pre-fix joint mapping. They are useful as runtime references only.
+After the joint-order fix, rerun MVAE from scratch and replace this section with the new run.
 
 ## 4. Switch From MVAE To DAR
 
@@ -121,6 +132,11 @@ Current verified DAR state:
 4. `loss/train_latent_rec`: `0.389046 -> 0.079731`
 
 This is a valid mid-stage checkpoint for visualization and continuation.
+
+Correction:
+
+This DAR checkpoint was trained from a pre-fix MVAE checkpoint. Treat it as a smoke-test artifact only.
+For the official baseline, retrain DAR from a corrected MVAE checkpoint.
 
 ## 7. Visualization Before Tracker
 

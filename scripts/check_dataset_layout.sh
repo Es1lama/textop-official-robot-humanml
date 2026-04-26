@@ -4,6 +4,11 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LABEL_DIR="${LABEL_DIR:-$ROOT/dataset/HumanML3D_babel_compat}"
 RAW_DIR="${RAW_DIR:-$ROOT/dataset/robot_humanml_data_v2}"
+EXTERNAL_RAW_DIR="/data/haozhe/zzn/VAR_FM/ws/project/dataset/robot_humanml_data_v2"
+
+if [ ! -d "$RAW_DIR/npz" ] && [ -d "$EXTERNAL_RAW_DIR/npz" ]; then
+  RAW_DIR="$EXTERNAL_RAW_DIR"
+fi
 
 echo "LABEL_DIR=$LABEL_DIR"
 echo "RAW_DIR=$RAW_DIR"

@@ -32,6 +32,13 @@ RAW_LEFT_FOOT_BODY_IDX = 6
 RAW_RIGHT_FOOT_BODY_IDX = 12
 RAW_CONTACT_VEL_THRESHOLD = 0.002
 RAW_CONTACT_HEIGHT_THRESHOLD = 0.08
+RAW_ISAAC_TO_TEXTOP_23 = np.asarray([
+    0, 3, 6, 9, 13, 17,
+    1, 4, 7, 10, 14, 18,
+    2, 5, 8,
+    11, 15, 19, 21,
+    12, 16, 20, 22,
+], dtype=np.int64)
 
 
 def _wxyz_to_xyzw_np(quat_wxyz: np.ndarray) -> np.ndarray:
@@ -54,11 +61,13 @@ def _raw_joint_pos_29_to_dof_23(joint_pos_29: np.ndarray) -> np.ndarray:
     """
     Convert our 29-DoF IsaacLab joint order to the official 23-DoF TextOp order.
 
-    The official 23-DoF representation keeps all joints except the 6 wrist DoFs:
-    - keep [0:19]   -> lower body + waist + left arm until elbow
-    - keep [22:26]  -> right arm until elbow
+    The raw dataset stores joints in IsaacLab's interleaved left/right order,
+    while TextOp/GMR/MuJoCo use grouped order:
+    left leg, right leg, waist, left arm, right arm.
+
+    The 23-DoF TextOp representation keeps all non-wrist joints.
     """
-    return np.concatenate([joint_pos_29[:, :19], joint_pos_29[:, 22:26]], axis=1)
+    return joint_pos_29[:, RAW_ISAAC_TO_TEXTOP_23]
 
 
 def _compute_contact_mask_from_body_positions(body_pos_w: np.ndarray) -> np.ndarray:

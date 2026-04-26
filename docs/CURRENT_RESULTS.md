@@ -2,6 +2,24 @@
 
 This file records the latest verified training status after the original public handoff commit.
 
+## 0. Important Correction: Previous Checkpoints Are Not Paper-Valid
+
+On 2026-04-26, the raw `joint_pos` adapter was found to be using the wrong joint order.
+
+What happened:
+
+1. raw dataset `joint_pos` is in IsaacLab interleaved order
+2. TextOp/GMR/MuJoCo expect grouped order
+3. the old loader used `joint_pos[:, :19]` plus `joint_pos[:, 22:26]`
+4. that slices the raw IsaacLab array without reordering it first
+
+Impact:
+
+1. previous MVAE and DAR checkpoints prove the training pipeline can run
+2. previous reconstruction numbers only prove reconstruction under the same wrong channel semantics
+3. previous MP4s are not valid evidence of correct robot motion semantics
+4. for paper-facing results, rerun MVAE from scratch after the joint-order fix, then rerun DAR from that new MVAE checkpoint
+
 ## 1. MVAE Status
 
 MVAE was first verified on full data, then resumed and stopped later to free GPU for DAR.

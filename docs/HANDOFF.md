@@ -26,6 +26,7 @@ What changed:
 2. the label path resolution is portable
 3. a 23DoF robot XML is included because the official release folder did not have it
 4. simple launch scripts were added
+5. raw IsaacLab joint order is reordered into TextOp/GMR grouped joint order before training
 
 ## 2. The Main Code Change
 
@@ -111,13 +112,31 @@ Then it builds the official fields:
    Source:
    `joint_pos`
    Extra handling:
-   convert 29DoF raw joints to the official 23DoF subset
+   reorder IsaacLab 29DoF raw joints into TextOp/GMR grouped order, then keep the official 23 non-wrist joints
+
+   The exact raw indices used are:
+
+   ```python
+   [0, 3, 6, 9, 13, 17,
+    1, 4, 7, 10, 14, 18,
+    2, 5, 8,
+    11, 15, 19, 21,
+    12, 16, 20, 22]
+   ```
+
+   Plain meaning:
+   left leg first, right leg second, waist third, left arm fourth, right arm fifth.
 
 4. `contact_mask`
    Source:
    reconstructed from left and right foot trajectories in `body_pos_w`
 
 After that, the code uses the official feature conversion path to build `57D` training features.
+
+Important:
+
+Any checkpoint trained before the joint-order fix learned the wrong channel semantics.
+Do not use old MVAE/DAR checkpoints as paper-facing results after this correction.
 
 ## 4. The Path Problem And How It Was Solved
 

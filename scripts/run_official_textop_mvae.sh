@@ -12,6 +12,13 @@ SAVE_EVERY="${SAVE_EVERY:-5000}"
 EVAL_EVERY="${EVAL_EVERY:-1000000}"
 
 export PYTHONPATH="$REPO${PYTHONPATH:+:$PYTHONPATH}"
+ISAAC_UTILS_PATH="${ISAAC_UTILS_PATH:-$ROOT/deps/isaac_utils}"
+LEGACY_ISAAC_UTILS="/data/haozhe/zzn/VAR_FM/ws/project/P_1_Embodied-AI/_reference/TextOp_official/deps/isaac_utils"
+if [ -d "$ISAAC_UTILS_PATH" ]; then
+  export PYTHONPATH="$ISAAC_UTILS_PATH:$PYTHONPATH"
+elif [ -d "$LEGACY_ISAAC_UTILS" ]; then
+  export PYTHONPATH="$LEGACY_ISAAC_UTILS:$PYTHONPATH"
+fi
 
 cd "$REPO"
 CUDA_VISIBLE_DEVICES="$GPU" "$PYTHON_BIN" -u -m robotmdar.cli \

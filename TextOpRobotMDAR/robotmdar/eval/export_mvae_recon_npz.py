@@ -12,7 +12,7 @@ from robotmdar.dtype import seed
 from robotmdar.dtype.abc import Dataset, VAE
 from robotmdar.dtype.motion import MotionDict, get_zero_abs_pose, motion_dict_to_abs_pose
 from robotmdar.eval.export_dar_npz import (
-    ISAAC_29_JOINT_NAMES,
+    MT_29_JOINT_NAMES,
     _build_text_embedding_table,
     _dof23_to_joint29,
     _match_text_batch,
@@ -56,7 +56,7 @@ def _save_sim2sim_npz(
         root_pos=root_pos,
         root_rot=root_rot_xyzw,
         dof_pos=dof_pos,
-        joint_names=ISAAC_29_JOINT_NAMES,
+        joint_names=MT_29_JOINT_NAMES,
         body_names=body_names,
         local_body_pos=local_body_pos,
         texts=np.asarray(texts, dtype=str),
@@ -176,4 +176,3 @@ def main(cfg: DictConfig):
         for row in manifest:
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
     print(f"[export_mvae_recon_npz] complete: saved {saved} motions under {out_dir}")
-
